@@ -1,20 +1,11 @@
 package com.devnguyen.myshop.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import java.util.List;
 import com.devnguyen.myshop.model.entity.User;
-import com.devnguyen.myshop.repository.UserRepo;
 
-@Service
-public class UserService {
-    @Autowired
-    private UserRepo userRepo;
+public interface UserService {
 
-   
-    public String addUser(User user){
-        
-        userRepo.save(user) ;
-        return "Add user successfull";
-    }
+    List <User> getAllUser();
+
+    String addUser(User user);
 }

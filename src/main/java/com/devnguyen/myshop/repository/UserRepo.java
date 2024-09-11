@@ -10,12 +10,11 @@ import com.devnguyen.myshop.model.entity.User;
 import java.util.Optional;
 
 
-
-
 @Repository
 public interface UserRepo extends MongoRepository<User, String>{
     
     Optional<User> findByEmail(String email);
+    
     Optional<User> findByUsername(String username);
 
 }

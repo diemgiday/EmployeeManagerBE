@@ -1,16 +1,20 @@
 package com.devnguyen.myshop.controller.auth;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import com.devnguyen.myshop.model.dto.request.LoginRequestDTO;
 import com.devnguyen.myshop.model.dto.request.RegisterRequestDTO;
-
+import com.devnguyen.myshop.response.TokenResponse;
 import com.devnguyen.myshop.service.AuthenticationService;
 
 import jakarta.validation.Valid;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,28 +22,33 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/auth")
+
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
+    public String register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
         authenticationService.register(registerRequestDTO);  
-        return ResponseEntity.ok("Dang ky thanh cong");
+        return "Regiter successfull";
+    }
+ 
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDTO request) {
+        TokenResponse tokenResponse = authenticationService.login(request);
+        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/login")
-    public String login(@RequestBody LoginRequestDTO loginRequestDTO) {
-        authenticationService.login(loginRequestDTO);
-        
-        return "Dang nhap thanh cong";
-    }
 
     @PostMapping("/forgot-password")
-    public String forgotPassword(@RequestBody RegisterRequestDTO request) {
-        //TODO: process POST request
+    public String forgotPassword(@RequestParam String email) {
+        return  authenticationService.forgotPassword(email);
         
-        return "entity";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String resetToken, @RequestParam String newPassword) {
+        return authenticationService.resetPassword(resetToken, newPassword);
     }
 
     @PostMapping("/logout")

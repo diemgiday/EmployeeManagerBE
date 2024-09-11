@@ -1,13 +1,23 @@
 package com.devnguyen.myshop.service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.devnguyen.myshop.exception.AppException;
+import com.devnguyen.myshop.exception.ErrorCode;
 import com.devnguyen.myshop.model.dto.request.LoginRequestDTO;
 import com.devnguyen.myshop.model.dto.request.RegisterRequestDTO;
+import com.devnguyen.myshop.model.entity.RedisToken;
 import com.devnguyen.myshop.model.entity.User;
+import com.devnguyen.myshop.repository.RedisTokenRepo;
 import com.devnguyen.myshop.repository.UserRepo;
+import com.devnguyen.myshop.response.TokenResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,74 +28,124 @@ public class AuthenticationService {
     private final UserRepo userRepo ;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+
+    private final RedisTokenService redisTokenService;
+    private final RedisTokenRepo redisTokenRepo;
+    private final RedisTemplate<String, RedisToken> redisTemplate;
+
+    public void register(RegisterRequestDTO registerRequestDTO) {
     
+        // Check if username already exists
+        Optional<User> exUser = userRepo.findByUsername(registerRequestDTO.getUsername());
+        if (exUser.isPresent()) {
+            throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS, "Username is already taken");
+        }
 
-    public void register(RegisterRequestDTO registerRequestDTO){
-        //validation email
-        if (!isValidEmail(registerRequestDTO.getEmail())) {
-            throw new IllegalArgumentException("Invalid email address");
+        // Check if email already exists
+        Optional<User> exEmail = userRepo.findByEmail(registerRequestDTO.getEmail());
+        if (exEmail.isPresent()) {
+             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS, "Email is already registered");
         }
-        //check email and username
-        Optional <User> exEmail = userRepo.findByEmail(registerRequestDTO.getEmail());
-        if(exEmail.isPresent()){
-            throw new IllegalArgumentException("Email is already used");
-        }
-        Optional <User> exUser = userRepo.findByUsername(registerRequestDTO.getUsername());
-        if(exUser.isPresent()){
-            throw new IllegalArgumentException("Username is already used");
-        }
-        //send mail
-        mailService.sendMail(registerRequestDTO.getEmail(), "Verify account", "Click link : abc to confirm");
-
-        //verify how??
-        
-        //hash password
+    
+        // Send verification email 
+        //
+    
+        // Hash the password
         String hashPassword = passwordEncoder.encode(registerRequestDTO.getPassword());
-
-        //create new user entity
+    
+        // Create new user entity
         User user = new User();
-
         user.setUsername(registerRequestDTO.getUsername());
         user.setPassword(hashPassword);
         user.setEmail(registerRequestDTO.getEmail());
-
-        //save db
+       
+    
+        // Save to database
         userRepo.save(user);
     }
-
-    private boolean isValidEmail(String email) {
-        return email != null && email.contains("@") && email.contains(".");
-    }
     
-    public void login(LoginRequestDTO loginRequestDTO){
+    
+    public TokenResponse login(LoginRequestDTO loginRequestDTO){
         // Check username
         Optional<User> userOptional = userRepo.findByUsername(loginRequestDTO.getUsername());
         if (!userOptional.isPresent()) {
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new AppException(ErrorCode.ACCOUNT_INCORRECT, "account incorrect");
         }
 
         User user = userOptional.get();
 
         // Check password
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new AppException(ErrorCode.ACCOUNT_INCORRECT, "account incorrect");
         }
 
-        //genarate access_token
-        
+        //genarate access_token save to Redis
+        String accessToken = UUID.randomUUID().toString();
+
+        redisTokenService.save(RedisToken.builder()
+                                    .id(user.getUsername())
+                                    .accessToken(accessToken)
+                                    .build());
+        return TokenResponse.builder()
+                        .username(user.getUsername())
+                        .accessToken(accessToken)
+                        .build();
     }
 
     public void logout(){
         //todo
     }
 
-    public void forgotPassword(){
+    public String forgotPassword(String email){
         //check email
+        Optional <User> userOptional = userRepo.findByEmail(email);
+        if(!userOptional.isPresent()){
+            throw new AppException(ErrorCode.EMAIL_NOT_FOUND, "email not found");
+        }
 
-        //send email
+        User user = userOptional.get();
 
-        //IsValid and IsExpire reset-token
+        //genarate reset-token 
+        String resetToken = UUID.randomUUID().toString();
+        //save to redis
+        RedisToken redisToken = RedisToken.builder()
+                                .id(user.getUsername())
+                                .resetToken(resetToken)
+                                .build();
+        redisTokenService.save(redisToken);
+        System.out.println("Saved RedisToken: " + redisToken);
 
-        //changed password
+        return resetToken ;                     
+    }  
+
+    public String resetPassword(String resetToken, String newPassword) {
+
+        // check token 
+        Optional<RedisToken> tokenOptional = redisTokenRepo.findByResetToken(resetToken);
+        if (!tokenOptional.isPresent()) {
+            throw new AppException(ErrorCode.INVALID_TOKEN, "Invalid or expired reset token");
+        }
+        
+        // get user to RedisToken
+        RedisToken redisToken = tokenOptional.get();
+        String username = redisToken.getId();  // id = username
+        
+        // get user to MongoDB
+        Optional<User> userOptional = userRepo.findByUsername(username);
+        if (!userOptional.isPresent()) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND, "User not found");
+        }
+    
+        // update password
+        User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+    
+        redisTemplate.delete(resetToken);
+    
+        return ("Password changed successful.");
     }
+    
+        
 }
+
