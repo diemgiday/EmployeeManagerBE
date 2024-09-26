@@ -1,4 +1,4 @@
-package com.devnguyen.myshop.response;
+package com.devnguyen.myshop.model.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

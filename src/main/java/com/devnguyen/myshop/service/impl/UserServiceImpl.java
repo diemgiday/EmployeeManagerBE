@@ -1,7 +1,6 @@
 package com.devnguyen.myshop.service.impl;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.devnguyen.myshop.model.entity.User;
@@ -15,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
+  
+
 
     @Override
     public List<User> getAllUser() {
@@ -23,7 +24,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String addUser(User user) {
+        
         userRepo.save(user);
+
         return "Add user successfull";
     }
 }

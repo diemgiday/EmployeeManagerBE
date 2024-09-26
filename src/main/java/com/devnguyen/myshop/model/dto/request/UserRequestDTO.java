@@ -1,39 +1,30 @@
-package com.devnguyen.myshop.model.entity;
+package com.devnguyen.myshop.model.dto.request;
+
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import com.devnguyen.myshop.enums.UserStatus;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.NoArgsConstructor;
-
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-
 
 @Getter
 @Setter
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Document(collection = "user")
-public class User {
 
-    @Id
-    private String id;  
-
+public class UserRequestDTO {
+    
+    @NotNull(message = "username must be not null")
     private String username;
 
+    @NotNull(message = "firstName must be not null")
     private String firstName;
 
+    @NotNull(message = "lastName must be not null")
     private String lastName;
 
+    @NotNull(message = "password must be not null")
     private String password;
 
     @Email(message = "Email is invalid")
@@ -42,5 +33,6 @@ public class User {
     private String email;
 
     private UserStatus statusUser = UserStatus.active;
+
 
 }

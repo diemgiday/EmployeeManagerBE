@@ -1,14 +1,14 @@
 package com.devnguyen.myshop.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class AppException extends RuntimeException {
-    private final ErrorCode errorCode;
 
-    public AppException(ErrorCode errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
-    }
+    private ErrorCode errorCode;
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
 }

@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final String[] WHITE_LIST = {"/auth/**", "/users/**"};
+    private final String[] WHITE_LIST = {"/auth/**", "/users/**", "/employees/**"};
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -39,11 +39,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers(WHITE_LIST)
-                                .permitAll()
-
+                                // .requestMatchers(WHITE_LIST)
+                                
                                 .anyRequest()
-                                .authenticated()
+                                .permitAll()
+                                // .authenticated()
                 )
                 .formLogin(login -> login.disable())
                 .httpBasic(basic -> basic.disable());

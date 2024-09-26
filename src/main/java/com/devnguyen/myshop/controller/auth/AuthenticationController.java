@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devnguyen.myshop.model.dto.request.LoginRequestDTO;
 import com.devnguyen.myshop.model.dto.request.RegisterRequestDTO;
-import com.devnguyen.myshop.response.TokenResponse;
+import com.devnguyen.myshop.model.dto.response.TokenResponse;
 import com.devnguyen.myshop.service.AuthenticationService;
 
 import jakarta.validation.Valid;
