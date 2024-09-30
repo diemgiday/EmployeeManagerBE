@@ -25,7 +25,6 @@ public class AuthenticationService {
     
     private final UserRepo userRepo ;
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
 
     private final RedisTokenService redisTokenService;
     private final RedisTokenRepo redisTokenRepo;
