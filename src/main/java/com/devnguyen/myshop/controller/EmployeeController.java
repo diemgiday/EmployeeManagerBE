@@ -46,7 +46,7 @@ public class EmployeeController {
         return "Deleted employee with id:" + id ;
     }
 
-    @GetMapping("/searchByKeyword")
+    @GetMapping("/search")
     public ResponseEntity <List<Employee>> searchEmployees(@RequestParam String keyword){
         try {
             List<Employee> employees = employeeService.searchByText(keyword);
@@ -55,13 +55,13 @@ public class EmployeeController {
             return ResponseEntity.status(500).build();
         }
     }
-    @GetMapping("/searchByName")
+    @GetMapping("/search-by-name")
     public ResponseEntity<List<Employee>> searchByName(@RequestBody String name) throws IOException {
         List<Employee> employees = employeeService.findByName(name);
         return ResponseEntity.ok(employees);
     }
     
-    @GetMapping("/searchBySalaryRange")
+    @GetMapping("/search-by-salary")
     public ResponseEntity<List<Employee>> searchBySalaryRange(@RequestParam("minSalary") double minSalary,
                                                               @RequestParam("maxSalary") double maxSalary) throws IOException {
         List<Employee> employees = employeeService.findBySalaryRange(minSalary, maxSalary);

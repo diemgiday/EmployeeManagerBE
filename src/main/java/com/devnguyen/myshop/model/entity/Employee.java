@@ -1,9 +1,12 @@
 package com.devnguyen.myshop.model.entity;
 
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -11,11 +14,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @AllArgsConstructor
 @Document(indexName = "employees")
-public class Employee {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Employee  {
     @Id
     private Long id;
     @NotNull(message = "firstName must be not null")
